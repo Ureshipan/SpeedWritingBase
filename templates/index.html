@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-info">
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Счёт:</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Жизни:</span>
+                <span class="stat-value" id="lives">3</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Точность:</span>
+                <span class="stat-value" id="accuracy">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="road-container">
+        <div class="road">
+            <div class="road-lines"></div>
+            <div class="car" id="car">
+                <div class="car-body">🚗</div>
+            </div>
+            <div class="finish-line" id="finish-line">🏁</div>
+        </div>
+    </div>
+
+    <div class="game-controls">
+        <button class="btn btn-primary" id="start-btn">Начать заезд</button>
+        <button class="btn btn-secondary" id="pause-btn" disabled>Пауза</button>
+        <button class="btn btn-secondary" id="reset-btn">Сброс</button>
+    </div>
+
+    <div class="typing-area">
+        <div class="street-display" id="street-display">
+            <p class="instruction">Нажмите "Начать заезд" чтобы начать</p>
+        </div>
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="typing-input" 
+                class="typing-input" 
+                placeholder="Введите название улицы..."
+                disabled
+                autocomplete="off"
+                spellcheck="false"
+            >
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="game-over" id="game-over" style="display: none;">
+        <div class="game-over-content">
+            <h2>Игра окончена!</h2>
+            <p>Ваш счёт: <span id="final-score">0</span></p>
+            <p>Точность: <span id="final-accuracy">0%</span></p>
+            <p>Слов напечатано: <span id="final-words">0</span></p>
+            <button class="btn btn-primary" id="restart-btn">Играть снова</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+{% endblock %}
+
