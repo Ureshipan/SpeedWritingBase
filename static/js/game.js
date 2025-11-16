@@ -140,7 +140,7 @@ class SpeedTypingGame {
             
             const data = await response.json();
             this.currentStreet = data;
-            this.displayStreet(data.name);
+            this.displayStreet(data.name, data.type);
             this.typingInput.value = '';
             this.typingInput.className = 'typing-input';
             this.progressFill.style.width = '0%';
@@ -153,14 +153,21 @@ class SpeedTypingGame {
         }
     }
     
-    displayStreet(name) {
-        this.streetDisplay.innerHTML = `<p class="street-name">${name}</p>`;
+    displayStreet(name, type) {
+        // Отображаем название обычным цветом, а тип - серым
+        this.streetDisplay.innerHTML = `
+            <p class="street-name">
+                <span class="street-name-text">${name}</span>
+                <span class="street-type-text"> ${type}</span>
+            </p>
+        `;
     }
     
     handleInput(e) {
         if (!this.isPlaying || this.isPaused || !this.currentStreet) return;
         
         const input = e.target.value;
+        // Проверяем только название, без типа
         const target = this.currentStreet.name;
         
         // Проверяем, увеличилась ли длина ввода (новый символ)
@@ -241,6 +248,7 @@ class SpeedTypingGame {
         
         // Откат прогресс-бара и очистка неправильного ввода
         if (this.currentStreet) {
+            // Проверяем только название, без типа
             const target = this.currentStreet.name;
             const input = this.typingInput.value;
             

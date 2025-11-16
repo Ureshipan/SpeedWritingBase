@@ -235,6 +235,16 @@ body {
     letter-spacing: 2px;
 }
 
+.street-name-text {
+    color: #333;
+}
+
+.street-type-text {
+    color: #999;
+    font-weight: normal;
+    opacity: 0.7;
+}
+
 .instruction {
     font-size: 1.2rem;
     color: #666;

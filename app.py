@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import random
 import os
+import yaml
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///speedwriting.db'
@@ -11,19 +12,6 @@ db = SQLAlchemy(app)
 
 
 # Модели базы данных
-class Street(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    length = db.Column(db.Integer, nullable=False)
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'length': self.length
-        }
-
-
 class GameResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(100), nullable=True)  # Для будущей системы регистрации
@@ -61,26 +49,29 @@ def get_street():
     if not length or length < 1:
         return jsonify({'error': 'Length parameter is required and must be positive'}), 400
     
-    # Сначала пытаемся найти улицы точно заданной длины
-    streets = Street.query.filter_by(length=length).all()
+    # Загружаем улицы из YAML (с кэшированием)
+    all_streets = load_streets_from_yaml()
+    
+    if not all_streets:
+        return jsonify({'error': 'No streets found'}), 404
+    
+    # Сначала пытаемся найти улицы точно заданной длины (длина названия без типа)
+    streets = [s for s in all_streets if s['length'] == length]
     
     # Если нет точно такой длины, ищем близкую (±2 символа)
     if not streets:
-        streets = Street.query.filter(
-            Street.length >= length - 2,
-            Street.length <= length + 2
-        ).all()
+        streets = [s for s in all_streets if length - 2 <= s['length'] <= length + 2]
     
     # Если всё ещё нет, берём любую доступную
     if not streets:
-        streets = Street.query.all()
+        streets = all_streets
     
     if not streets:
-        return jsonify({'error': 'No streets found in database'}), 404
+        return jsonify({'error': 'No streets found'}), 404
     
     # Выбираем случайную улицу
     random_street = random.choice(streets)
-    return jsonify(random_street.to_dict())
+    return jsonify(random_street)
 
 
 @app.route('/api/result', methods=['POST'])
@@ -122,56 +113,94 @@ def get_results():
     return jsonify([r.to_dict() for r in results])
 
 
+# Кэш для улиц (загружается один раз при первом запросе)
+_streets_cache = None
+
+
+def parse_street_name(full_name):
+    """Разделяет полное название улицы на название и тип"""
+    # Убираем дефис в начале, если есть
+    full_name = full_name.lstrip('- ').strip()
+    
+    # Список типов улиц (от более длинных к более коротким для правильного распознавания)
+    street_types = [
+        'набережная', 'проспект', 'площадь', 'бульвар', 'шоссе', 
+        'переулок', 'проезд', 'аллея', 'улица', 'просека', 
+        'мост', 'линия', 'тупик', 'эстакада', 'тоннель'
+    ]
+    
+    # Сначала проверяем, не начинается ли строка с типа (например, "проспект Мира")
+    for street_type in street_types:
+        if full_name.lower().startswith(street_type.lower() + ' '):
+            # Тип в начале, название после
+            name_part = full_name[len(street_type):].strip()
+            return name_part, street_type
+    
+    # Если тип не в начале, ищем в конце строки
+    for street_type in street_types:
+        if full_name.lower().endswith(' ' + street_type.lower()) or full_name.lower().endswith(street_type.lower()):
+            # Находим позицию начала типа
+            name_part = full_name[:len(full_name) - len(street_type)].strip()
+            return name_part, street_type
+    
+    # Если тип не найден, считаем что это просто название
+    return full_name, 'улица'
+
+
+def load_streets_from_yaml():
+    """Загружает улицы из YAML файла и кэширует в памяти"""
+    global _streets_cache
+    
+    if _streets_cache is not None:
+        return _streets_cache
+    
+    yaml_path = os.path.join(os.path.dirname(__file__), 'data', 'moscow_streets.yaml')
+    
+    if not os.path.exists(yaml_path):
+        print(f"Error: YAML file not found at {yaml_path}")
+        _streets_cache = []
+        return _streets_cache
+    
+    try:
+        with open(yaml_path, 'r', encoding='utf-8') as f:
+            streets_list = yaml.safe_load(f)
+        
+        if not streets_list:
+            print("Error: YAML file is empty or invalid")
+            _streets_cache = []
+            return _streets_cache
+        
+        # Обрабатываем каждую улицу
+        streets = []
+        for full_name in streets_list:
+            if not full_name or not isinstance(full_name, str):
+                continue
+            
+            # Разделяем название и тип
+            name, street_type = parse_street_name(full_name)
+            
+            streets.append({
+                'name': name,
+                'type': street_type,
+                'full_name': full_name,
+                'length': len(name)
+            })
+        
+        _streets_cache = streets
+        print(f"Loaded {len(streets)} streets from YAML")
+        return _streets_cache
+        
+    except Exception as e:
+        print(f"Error loading streets from YAML: {e}")
+        _streets_cache = []
+        return _streets_cache
+
+
 def init_db():
-    """Инициализация базы данных с московскими улицами"""
+    """Инициализация базы данных (только для GameResult)"""
     with app.app_context():
         db.create_all()
-        
-        # Проверяем, есть ли уже улицы в базе
-        if Street.query.count() > 0:
-            print("Database already initialized")
-            return
-        
-        # Список московских улиц с разной длиной
-        moscow_streets = [
-            # Короткие (5-10 символов)
-            "Арбат", "Тверская", "Красная", "Лубянка", "Сретенка",
-            "Пятницкая", "Остоженка", "Пречистенка", "Варварка", "Ильинка",
-            "Петровка", "Мясницкая", "Никитская", "Знаменка", "Волхонка",
-            "Поварская", "Спиридоньевка", "Гранатный", "Садовая",
-            
-            # Средние (11-20 символов)
-            "Кутузовский проспект", "Ленинский проспект", "Проспект Мира",
-            "Тверской бульвар", "Никитский бульвар", "Гоголевский бульвар",
-            "Малая Бронная", "Большая Полянка", "Большая Ордынка",
-            "Малая Ордынка", "Большая Дмитровка", "Малая Дмитровка",
-            "Большая Лубянка", "Малая Лубянка", "Новослободская",
-            "Садовая-Спасская", "Садовая-Сухаревская", "Садовая-Каретная",
-            "Садовая-Триумфальная", "Садовая-Кудринская", "Садовая-Самотечная",
-            "Садовая-Черногрязская", "Садовая-Спасская", "Садовая-Триумфальная",
-            "Большая Никитская", "Малая Никитская", "Большая Пироговская",
-            "Малая Пироговская", "Большая Якиманка", "Малая Якиманка",
-            "Большая Серпуховская", "Малая Серпуховская", "Большая Грузинская",
-            "Малая Грузинская", "Большая Дорогомиловская", "Малая Дорогомиловская",
-            
-            # Длинные (21-30 символов)
-            "Новоарбатский проспект", "Краснопресненская набережная",
-            "Берсеневская набережная", "Софийская набережная",
-            "Пречистенская набережная", "Кремлевская набережная",
-            "Красная площадь", "Театральная площадь", "Манежная площадь",
-            "Пушкинская площадь", "Славянская площадь", "Боровицкая площадь",
-            "Тверская площадь", "Лубянская площадь", "Смоленская площадь",
-            "Арбатская площадь", "Суворовская площадь", "Комсомольская площадь",
-            "Калужская площадь", "Серпуховская площадь", "Добрынинская площадь",
-            "Павелецкая площадь", "Курская площадь", "Рижская площадь",
-        ]
-        
-        for street_name in moscow_streets:
-            street = Street(name=street_name, length=len(street_name))
-            db.session.add(street)
-        
-        db.session.commit()
-        print(f"Initialized database with {len(moscow_streets)} streets")
+        print("Database initialized")
 
 
 if __name__ == '__main__':
