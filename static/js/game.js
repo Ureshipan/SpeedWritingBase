@@ -211,6 +211,8 @@ class SpeedTypingGame {
         const roadWidth = document.querySelector('.road-container').offsetWidth;
         const maxPosition = roadWidth - 150; // Оставляем место для финиша
         this.carPosition = (progress / 100) * maxPosition;
+        // Добавляем класс для анимации покачивания
+        car.classList.add('moving');
         this.car.style.transform = `translateX(${this.carPosition}px)`;
     }
     

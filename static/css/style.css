@@ -133,9 +133,27 @@ body {
     left: 50px;
     bottom: 50px;
     transform: translateX(0);
-    transition: transform 0.3s ease;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 10;
 }
+/* Анимация покачивания машинки */
+/* Анимация покачивания машинки */
+@keyframes car-bounce {
+    0%, 100% {
+        margin-bottom: 0;
+    }
+    50% {
+        margin-bottom: 5px;
+    }
+}
+
+/* Применяем покачивание когда машинка движется */
+.car.moving {
+    animation: car-bounce 0.6s ease-in-out infinite;
+}
+
+
+
 
 .car-body {
     font-size: 3rem;
