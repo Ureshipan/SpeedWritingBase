@@ -148,9 +148,10 @@ body {
 }
 
 /* Применяем покачивание когда машинка движется */
-.car.moving {
+.car.moving .car-body {
     animation: car-bounce 0.6s ease-in-out infinite;
 }
+
 
 
 
@@ -158,23 +159,39 @@ body {
 .car-body {
     font-size: 3rem;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+    display: inline-block;
 }
 
-.car.crashed {
-    animation: crash 0.5s ease;
+.car.crashed .car-body {
+    animation: crash 0.5s ease-out;
+    animation-fill-mode: forwards;
 }
+
 
 @keyframes crash {
-    0%, 100% {
-        transform: translateX(0) rotate(0deg);
+    0% {
+        transform: rotate(0deg) scale(1);
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
     }
     25% {
-        transform: translateX(-10px) rotate(-10deg);
+        transform: rotate(-15deg) scale(1.1);
+        filter: drop-shadow(5px 5px 10px rgba(255, 0, 0, 0.8));
+    }
+    50% {
+        transform: rotate(15deg) scale(0.95);
+        filter: drop-shadow(-5px 5px 10px rgba(255, 0, 0, 0.8));
     }
     75% {
-        transform: translateX(10px) rotate(10deg);
+        transform: rotate(-10deg) scale(1.05);
+        filter: drop-shadow(3px 3px 8px rgba(255, 0, 0, 0.6));
+    }
+    100% {
+        transform: rotate(0deg) scale(0.9);
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+        opacity: 0.7;
     }
 }
+
 
 .finish-line {
     position: absolute;
