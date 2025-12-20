@@ -14,6 +14,7 @@ class SpeedTypingGame {
         this.targetPosition = 0;
         this.lastInputLength = 0;
         this.mistakeHandled = false;
+        this.skipCarUpdate = false;
         
         this.initializeElements();
         this.attachEventListeners();
@@ -144,6 +145,8 @@ class SpeedTypingGame {
             this.typingInput.value = '';
             this.typingInput.className = 'typing-input';
             this.progressFill.style.width = '0%';
+            this.carPosition = 0;
+            this.car.style.transform = 'translateX(0px)';
             this.lastInputLength = 0;
             this.mistakeHandled = false;
             this.typingInput.focus();
@@ -189,6 +192,7 @@ class SpeedTypingGame {
                 // Ошибка засчитывается только один раз за неправильный ввод
                 if (!this.mistakeHandled) {
                     this.handleMistake();
+                     this.skipCarUpdate = true;
                     this.mistakeHandled = true;
                 }
             }
@@ -211,23 +215,38 @@ class SpeedTypingGame {
         const roadWidth = document.querySelector('.road-container').offsetWidth;
         const maxPosition = roadWidth - 150; // Оставляем место для финиша
         this.carPosition = (progress / 100) * maxPosition;
+        // Добавляем класс для анимации покачивания
+        this.car.classList.add('moving');
         this.car.style.transform = `translateX(${this.carPosition}px)`;
     }
     
     handleCorrectWord() {
-        this.wordsTyped++;
-        this.score += Math.floor(100 * (1 + this.wordsTyped / 10));
-        this.updateStats();
-        
-        // Анимация успеха
-        this.typingInput.classList.add('correct');
-        
-        setTimeout(() => {
-            if (this.isPlaying && !this.isPaused) {
-                this.loadNextStreet();
-            }
-        }, 300);
-    }
+    this.wordsTyped++;
+    this.score += Math.floor(100 * (1 + this.wordsTyped / 10));
+    this.updateStats();
+    
+    // Анимация успеха
+    this.typingInput.classList.add('correct');
+    
+    // Убираем класс движения
+    this.car.classList.remove('moving');
+    
+    // Плавно возвращаем машинку на старт
+    setTimeout(() => {
+        this.car.style.transition = 'transform 0.8s ease-in-out';
+        this.carPosition = 0;
+        this.car.style.transform = 'translateX(0px)';
+    }, 300);
+    
+    setTimeout(() => {
+        if (this.isPlaying && !this.isPaused) {
+            this.loadNextStreet();
+            // Убираем transition для обычного движения
+            this.car.style.transition = '';
+        }
+    }, 1100);
+}
+
     
     handleMistake() {
         this.mistakes++;
@@ -241,10 +260,10 @@ class SpeedTypingGame {
         }, 500);
         
         // Откат машинки назад (на 20% от текущей позиции)
-        const roadWidth = document.querySelector('.road-container').offsetWidth;
-        const maxPosition = roadWidth - 150;
-        this.carPosition = Math.max(0, this.carPosition * 0.8);
-        this.car.style.transform = `translateX(${this.carPosition}px)`;
+        // const roadWidth = document.querySelector('.road-container').offsetWidth;
+        // const maxPosition = roadWidth - 150;
+        // this.carPosition = Math.max(0, this.carPosition * 0.8);
+        // this.car.style.transform = `translateX(${this.carPosition}px)`;
         
         // Откат прогресс-бара и очистка неправильного ввода
         if (this.currentStreet) {
@@ -271,7 +290,7 @@ class SpeedTypingGame {
             this.progressFill.style.width = `${currentProgress}%`;
             
             // Обновляем позицию машинки
-            this.updateCarPosition(currentProgress);
+            // this.updateCarPosition(currentProgress);
         }
         
         // Проверка на окончание игры
