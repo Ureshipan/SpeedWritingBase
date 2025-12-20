@@ -3,10 +3,17 @@
     padding: 0;
     box-sizing: border-box;
 }
-
+:root {
+    --moscow-red: #D32F2F;
+    --moscow-red-dark: #911313;
+    --moscow-red-light: #EF5350;
+    --moscow-gold: #FFD700;
+    --moscow-gold-dark: #FFA000;
+    --moscow-gold-light: #FFECB3;
+}
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--moscow-red)0%, var(--moscow-red-dark) 100%);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -14,7 +21,7 @@ body {
 
 /* Header */
 .header {
-    background: rgba(255, 255, 255, 0.95);
+    background: #fffffff2;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 1rem 0;
 }
@@ -63,10 +70,12 @@ body {
     justify-content: space-around;
     flex-wrap: wrap;
     gap: 1rem;
+    background-color: white;
+    color: var(--moscow-gold);
 }
 
 .stat-item {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--moscow-red-light) 35%, var(--moscow-red-dark)100%);
     color: white;
     padding: 1rem 2rem;
     border-radius: 10px;
@@ -221,8 +230,8 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--moscow-red) 100%, var(--moscow-red-dark) 0%);
+    color: rgb(255, 255, 255);
 }
 
 .btn-primary:hover:not(:disabled) {
