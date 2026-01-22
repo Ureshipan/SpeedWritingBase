@@ -4,16 +4,13 @@
     box-sizing: border-box;
 }
 :root {
-    --moscow-red: #D32F2F;
-    --moscow-red-dark: #911313;
-    --moscow-red-light: #EF5350;
-    --moscow-gold: #FFD700;
-    --moscow-gold-dark: #FFA000;
-    --moscow-gold-light: #FFECB3;
+    --moscow-lapis: #007FFF;
+    --moscow-white: #F5F5F5;
+    --moscow-blue-dark: #3939dd;
 }
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--moscow-red)0%, var(--moscow-red-dark) 100%);
+    background: linear-gradient(135deg, var(--moscow-lapis)0%, var(--moscow-blue-dark) 100%);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -75,7 +72,7 @@ body {
 }
 
 .stat-item {
-    background: linear-gradient(135deg, var(--moscow-red-light) 35%, var(--moscow-red-dark)100%);
+    background: linear-gradient(135deg, var(--moscow-lapis) 35%, var(--moscow-blue-dark)100%);
     color: white;
     padding: 1rem 2rem;
     border-radius: 10px;
@@ -103,7 +100,7 @@ body {
     height: 200px;
     overflow: hidden;
     border-radius: 10px;
-    background: #2c3e50;
+    background: rgba(52, 73, 94, 0.7);
 }
 
 .road {
@@ -230,7 +227,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--moscow-red) 100%, var(--moscow-red-dark) 0%);
+    background: linear-gradient(135deg, var(--moscow-lapis) 100%, var(--moscow-blue-dark) 0%);
     color: rgb(255, 255, 255);
 }
 
@@ -260,7 +257,8 @@ body {
 }
 
 .street-display {
-    background: #f8f9fa;
+    background: repeating-linear-gradient(white 0%, #F5FFFA 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     border: 2px solid #e9ecef;
     border-radius: 10px;
     padding: 2rem;
@@ -273,7 +271,7 @@ body {
 }
 
 .street-name {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: bold;
     color: #333;
     letter-spacing: 2px;
