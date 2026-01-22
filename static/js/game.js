@@ -236,15 +236,18 @@ class SpeedTypingGame {
         this.car.style.transition = 'transform 0.8s ease-in-out';
         this.carPosition = 0;
         this.car.style.transform = 'translateX(0px)';
-    }, 300);
-    
-    setTimeout(() => {
+
+
         if (this.isPlaying && !this.isPaused) {
             this.loadNextStreet();
             // Убираем transition для обычного движения
             this.car.style.transition = '';
         }
-    }, 1100);
+    }, 300);
+    
+    // setTimeout(() => {
+        
+    // }, 1100);
 }
 
     
